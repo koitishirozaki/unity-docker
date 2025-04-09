@@ -39,6 +39,8 @@ RUN "C:/Program\ Files/Unity\ Hub/Unity\ Hub.exe -- --headless install \
     | tee /var/log/install-editor.log \
     && grep 'Error' /var/log/install-editor.log \
     | exit $(wc -l)"
+
+# Installing modules dependencies
 RUN "if [ $module = 'base' ]; then \
     echo 'running default modules for this base OS'; \
     else \
@@ -51,6 +53,10 @@ RUN "if [ $module = 'base' ]; then \
     | exit $(wc -l); \
     fi"
 
+#########################################################
+# Add Nintendo/Sony/XBOX modules here.                  #         
+# In case of plugins, SDKs, etc, add them here as well  #
+#########################################################
 
 SHELL ["powershell.exe", "-Command"]
 RUN echo "$Env:version" > "C:/UnityEditor/$Env:version/version"
@@ -60,12 +66,8 @@ RUN setx -M UNITY_PATH "C:/UnityEditor/$Env:version"
 RUN git config --global --add safe.directory "*"
 RUN foreach ("$service" in 'nlasvc', 'netprofm') {"Set-Service $service -StartupType Automatic"}
 
-# Install modules
-#########################################################
-# Add Nintendo/Sony/XBOX modules here.                  #         
-# In case of plugins, SDKs, etc, add them here as well  #
-#########################################################
-RUN if ("$Env:module" -eq 'Android') { .\scripts\Android.ps1 }
+# Set Unity Target Platform
+RUN if ("$Env:module" -eq 'Android') { .\scripts\SetupAndroid.ps1 }
 
 # Licenses
 RUN if ("$Env:module" -eq 'Android') { .\scripts\AcceptAndroidLicenses.ps1 }
